@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full overflow-hidden select-none">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RS SHOP</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: pan-y; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="h-full bg-slate-50 text-slate-800 font-sans flex flex-col antialiased">
+
+    <div id="global-loader" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-2xl shadow-xl flex flex-col items-center space-y-4">
+            <div class="flex space-x-2">
+                <div class="w-3 h-3 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div class="w-3 h-3 bg-indigo-600 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div class="w-3 h-3 bg-indigo-600 rounded-full animate-bounce"></div>
+            </div>
+            <p class="text-xs font-semibold text-slate-500 tracking-wider uppercase">Processing...</p>
+        </div>
+    </div>
+
+    <div class="w-full max-w-md mx-auto h-full bg-white flex flex-col relative shadow-2xl overflow-hidden border-x border-slate-100">
+        
+        <header id="app-header" class="bg-white border-b border-slate-100 h-14 flex items-center justify-between px-4 sticky top-0 z-30 shrink-0">
+            <div id="header-default-state" class="flex items-center justify-between w-full">
+                <div class="flex items-center space-x-3">
+                    <button id="menu-toggle-btn" class="text-slate-600 p-1 focus:outline-none">
+                        <i class="fa-solid fa-bars-staggered text-xl"></i>
+                    </button>
+                    <span class="text-xl font-extrabold tracking-tight bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">RS SHOP</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button onclick="toggleSearchBar(true)" class="text-slate-600 p-1">
+                        <i class="fa-solid fa-magnifying-glass text-lg"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="header-search-state" class="hidden w-full flex items-center space-x-2">
+                <button onclick="toggleSearchBar(false)" class="text-slate-500 p-1">
+                    <i class="fa-solid fa-arrow-left text-lg"></i>
+                </button>
+                <div class="flex-1 relative">
+                    <input type="text" id="global-search-input" oninput="handleSearch(this.value)" placeholder="Search products..." class="w-full h-9 pl-9 pr-4 bg-slate-100 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 border border-transparent">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                </div>
+            </div>
+        </header>
+
+        <div id="mobile-drawer" class="fixed inset-0 z-40 translate-x-[-100%] transition-transform duration-300 ease-in-out hidden max-w-md mx-auto left-0 right-0">
+            <div id="drawer-overlay" class="absolute inset-0 bg-black/40 backdrop-blur-xs"></div>
+            <div class="absolute left-0 top-0 bottom-0 w-72 bg-white h-full flex flex-col shadow-2xl">
+                <div class="p-5 bg-gradient-to-br from-indigo-600 to-indigo-800 text-white flex items-center justify-between">
+                    <div>
+                        <h4 id="drawer-user-name" class="font-bold text-lg">Guest User</h4>
+                        <p id="drawer-user-email" class="text-xs text-indigo-200">Welcome to RS Shop</p>
+                    </div>
+                    <i class="fa-solid fa-circle-user text-3xl text-indigo-200"></i>
+                </div>
+                <div class="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+                    <button onclick="router.navigate('user-home')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-slate-700 font-medium hover:bg-slate-50"><i class="fa-solid fa-house text-indigo-500 w-6"></i><span>Home</span></button>
+                    <button onclick="router.navigate('user-products')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-slate-700 font-medium hover:bg-slate-50"><i class="fa-solid fa-layer-group text-indigo-500 w-6"></i><span>Shop Categories</span></button>
+                    <button onclick="router.navigate('user-orders')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-slate-700 font-medium hover:bg-slate-50"><i class="fa-solid fa-clock-rotate-left text-indigo-500 w-6"></i><span>Track Orders</span></button>
+                    <button onclick="router.navigate('user-helpline')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-slate-700 font-medium hover:bg-slate-50"><i class="fa-solid fa-headset text-indigo-500 w-6"></i><span>Helpline & Support</span></button>
+                    <button onclick="router.navigate('user-profile')" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-slate-700 font-medium hover:bg-slate-50"><i class="fa-solid fa-user-gear text-indigo-500 w-6"></i><span>My Profile</span></button>
+                    <hr class="border-slate-100 my-2">
+                    <button onclick="db.logoutUser();" class="w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left text-red-600 font-medium hover:bg-red-50"><i class="fa-solid fa-power-off w-6"></i><span>Log Out</span></button>
+                </div>
+            </div>
+        </div>
+
+        <main id="app-view-container" class="flex-1 overflow-y-auto no-scrollbar relative bg-slate-50 pb-16">
+        </main>
+
+        <nav id="app-bottom-nav" class="absolute bottom-0 left-0 right-0 h-16 bg-white border-t border-slate-100 flex items-center justify-around z-30 shrink-0">
+            <button onclick="router.navigate('user-home')" class="flex flex-col items-center text-indigo-600"><i class="fa-solid fa-house text-xl mb-0.5"></i><span class="text-[10px] font-semibold">Home</span></button>
+            <button onclick="router.navigate('user-cart')" class="flex flex-col items-center text-slate-400 relative">
+                <i class="fa-solid fa-bag-shopping text-xl mb-0.5"></i><span class="text-[10px] font-semibold">Cart</span>
+                <span id="nav-cart-badge" class="absolute -top-1.5 -right-2.5 bg-rose-500 text-white font-black text-[9px] w-4 h-4 flex items-center justify-center rounded-full border border-white hidden">0</span>
+            </button>
+            <button onclick="router.navigate('user-profile')" class="flex flex-col items-center text-slate-400"><i class="fa-solid fa-user text-xl mb-0.5"></i><span class="text-[10px] font-semibold">Profile</span></button>
+        </nav>
+    </div>
+
+    <script>
+        document.addEventListener('contextmenu', e => e.preventDefault());
+        document.addEventListener('selectstart', e => e.preventDefault());
+        document.addEventListener('keydown', e => { if (e.ctrlKey && (e.key === 'r' || e.key === 'R' || e.key === '+' || e.key === '-' || e.key === '0')) e.preventDefault(); });
+
+        const SEED_IMAGES = {
+            phones: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='%236366f1'><rect x='25' y='10' width='50' height='80' rx='8' fill='%234f46e5'/><circle cx='50' y='82' r='4' fill='white'/><rect x='30' y='18' width='40' height='55' fill='%23e0e7ff'/></svg>",
+            laptops: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='15' y='25' width='70' height='45' rx='4' fill='%23475569'/><rect x='20' y='30' width='60' height='35' fill='%23f1f5f9'/><path d='M5 70 H95 L90 76 H10 Z' fill='%23334155'/></svg>"
+        };
+
+        class LocalDatabaseEngine {
+            constructor() { this.initTables(); }
+            initTables() {
+                if(!localStorage.getItem('rs_users')) localStorage.setItem('rs_users', JSON.stringify([]));
+                if(!localStorage.getItem('rs_admin')) localStorage.setItem('rs_admin', JSON.stringify({username: "admin", password: "123"}));
+                if(!localStorage.getItem('rs_categories')) {
+                    localStorage.setItem('rs_categories', JSON.stringify([
+                        {id: 1, name: "Smartphones", image: SEED_IMAGES.phones},
+                        {id: 2, name: "Laptops", image: SEED_IMAGES.laptops}
+                    ]));
+                }
+                if(!localStorage.getItem('rs_products')) {
+                    localStorage.setItem('rs_products', JSON.stringify([
+                        {id: 101, cat_id: 1, name: "iPhone 15 Pro Max", description: "Premium Titanium Build with dynamic island.", short_desc: "Titanium build, A17 Pro Chip", long_desc: "Display: 6.7 inches\nCamera: 48MP Main\nBattery: 4441 mAh", price: 145000, stock: 10, image: SEED_IMAGES.phones, images: [SEED_IMAGES.phones], code: "IPH15PM"},
+                        {id: 102, cat_id: 2, name: "MacBook Pro M3", description: "Extreme Performance Laptop for developers.", short_desc: "M3 Max Chip, 16GB Unified Memory", long_desc: "Storage: 512GB SSD\nDisplay: 14.2-inch Liquid Retina\nOS: macOS Sonoma", price: 245000, stock: 5, image: SEED_IMAGES.laptops, images: [SEED_IMAGES.laptops], code: "MBPM3"}
+                    ]));
+                }
+                if(!localStorage.getItem('rs_orders')) localStorage.setItem('rs_orders', JSON.stringify([]));
+                if(!localStorage.getItem('rs_cart')) localStorage.setItem('rs_cart', JSON.stringify([]));
+                if(!localStorage.getItem('rs_tickets')) localStorage.setItem('rs_tickets', JSON.stringify([])); 
+                if(!localStorage.getItem('rs_session_user')) localStorage.setItem('rs_session_user', null);
+            }
+            getData(key) { return JSON.parse(localStorage.getItem(key)); }
+            setData(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
+            ajaxRequest(action, callback) {
+                document.getElementById('global-loader').classList.remove('hidden');
+                setTimeout(() => {
+                    document.getElementById('global-loader').classList.add('hidden');
+                    try { const response = action(); callback({ success: true, data: response }); }
+                    catch (err) { callback({ success: false, error: err.message }); }
+                }, 400);
+            }
+            logoutUser() { this.setData('rs_session_user', null); this.setData('rs_cart', []); router.navigate('user-login'); }
+        }
+        const db = new LocalDatabaseEngine();
+
+        class AppRouter {
+            constructor() {
+                this.views = {};
+                window.addEventListener('popstate', (e) => { if(e.state) this.renderView(e.state.view, e.state.param, false); });
+            }
+            register(viewId, template) { this.views[viewId] = template; }
+            navigate(viewId, param = null) { this.renderView(viewId, param, true); }
+            renderView(viewId, param, pushHistory = true) {
+                const activeUser = db.getData('rs_session_user');
+                if (!activeUser && viewId !== 'user-login') viewId = 'user-login';
+
+                if (viewId === 'user-checkout') {
+                    const currentCart = db.getData('rs_cart') || [];
+                    if (currentCart.length === 0) { viewId = 'user-cart'; }
+                }
+
+                if (viewId !== 'user-products') { toggleSearchBar(false); }
+
+                const nav = document.getElementById('app-bottom-nav');
+                if(viewId === 'user-login') nav.classList.add('hidden'); else nav.classList.remove('hidden');
+
+                if (this.views[viewId]) {
+                    if(pushHistory) window.history.pushState({view: viewId, param: param}, '', `#${viewId}`);
+                    document.getElementById('app-view-container').innerHTML = this.views[viewId](param);
+                    this.updateCartBadge();
+                    this.updateDrawerInfo();
+                }
+            }
+            updateCartBadge() {
+                const cart = db.getData('rs_cart');
+                const badge = document.getElementById('nav-cart-badge');
+                if(cart && cart.length > 0) {
+                    badge.textContent = cart.reduce((acc, i) => acc + i.qty, 0);
+                    badge.classList.remove('hidden');
+                } else { badge.classList.add('hidden'); }
+            }
+            updateDrawerInfo() {
+                const user = db.getData('rs_session_user');
+                document.getElementById('drawer-user-name').textContent = user ? user.name : 'Guest User';
+                document.getElementById('drawer-user-email').textContent = user ? user.email : 'Welcome';
+            }
+        }
+        const router = new AppRouter();
+
+        window.toggleSearchBar = (show) => {
+            const defState = document.getElementById('header-default-state');
+            const searchState = document.getElementById('header-search-state');
+            const input = document.getElementById('global-search-input');
+            
+            if (show) {
+                defState.classList.add('hidden');
+                searchState.classList.remove('hidden');
+                input.focus();
+                if(window.location.hash !== '#user-products') { router.navigate('user-products'); }
+            } else {
+                defState.classList.remove('hidden');
+                searchState.classList.add('hidden');
+                input.value = "";
+                if(window.location.hash === '#user-products') { router.navigate('user-products'); }
+            }
+        };
+
+        window.handleSearch = (keyword) => {
+            const container = document.getElementById('products-list-container');
+            if (!container) return;
+            
+            const prods = db.getData('rs_products');
+            const filtered = prods.filter(p => 
+                p.name.toLowerCase().includes(keyword.toLowerCase()) || 
+                (p.description && p.description.toLowerCase().includes(keyword.toLowerCase())) ||
+                (p.code && p.code.toLowerCase().includes(keyword.toLowerCase()))
+            );
+
+            if(filtered.length === 0) {
+                container.innerHTML = `<div class="p-12 text-center text-xs text-slate-400"><i class="fa-solid fa-magnifying-glass block text-2xl mb-2 text-slate-300"></i>No products match your search.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(p => `
+                <div onclick="router.navigate('user-product-detail', ${p.id})" class="bg-white p-3 border border-slate-100 rounded-xl flex items-center space-x-3 cursor-pointer shadow-2xs relative">
+                    <div class="absolute top-2 left-2 z-10">
+                        <span class="text-[8px] font-mono font-black bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded border border-indigo-100/60 shadow-2xs">${p.code || 'product code'}</span>
+                    </div>
+                    <img src="${(p.images && p.images.length > 0) ? p.images[0] : p.image}" class="w-16 h-16 object-contain">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-xs text-slate-800 truncate">${p.name}</h4>
+                        <p class="text-[10px] text-slate-400 truncate mb-1">${p.short_desc || p.description || ''}</p>
+                        <span class="text-xs font-black text-indigo-600 font-mono">৳${p.price.toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const drawer = document.getElementById('mobile-drawer');
+            document.getElementById('menu-toggle-btn').addEventListener('click', () => { drawer.classList.remove('hidden'); setTimeout(() => drawer.classList.remove('translate-x-[-100%]'), 10); });
+            document.getElementById('drawer-overlay').addEventListener('click', () => { drawer.classList.add('translate-x-[-100%]'); setTimeout(() => drawer.classList.add('hidden'), 300); });
+        });
+    </script>
+
+    <script>
+        // LOGIN GATEWAY TEMPLATE
+        router.register('user-login', () => `
+            <div class="p-6 flex flex-col justify-center min-h-[80vh]">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-black text-indigo-600">RS SHOP</h2>
+                    <p class="text-xs text-slate-400">Dear all customers</p>
+                </div>
+                <div class="bg-slate-100 p-1 rounded-xl flex mb-6">
+                    <button onclick="document.getElementById('login-form').classList.remove('hidden'); document.getElementById('signup-form').classList.add('hidden');" class="flex-1 py-2 text-xs font-bold bg-white rounded-lg shadow-xs">Sign In</button>
+                    <button onclick="document.getElementById('signup-form').classList.remove('hidden'); document.getElementById('login-form').classList.add('hidden');" class="flex-1 py-2 text-xs font-bold text-slate-400">Register</button>
+                </div>
+                <form id="login-form" onsubmit="event.preventDefault(); auth('login');" class="space-y-4">
+                    <input type="email" id="li-email" placeholder="Email" required class="w-full h-11 px-4 border rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="password" id="li-pass" placeholder="Password" required class="w-full h-11 px-4 border rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                    <button class="w-full h-11 bg-indigo-600 text-white font-bold rounded-xl text-xs uppercase shadow-lg shadow-indigo-600/20">Login</button>
+                </form>
+                <form id="signup-form" onsubmit="event.preventDefault(); auth('signup');" class="space-y-4 hidden">
+                    <input type="text" id="su-name" placeholder="Full Name" required class="w-full h-11 px-4 border rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="tel" id="su-phone" placeholder="Phone" required class="w-full h-11 px-4 border rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="email" id="su-email" placeholder="Email" required class="w-full h-11 px-4 border rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                    <input type="password" id="su-pass" placeholder="Password" required class="w-full h-11 px-4 border rounded-xl text-sm focus:outline-none focus:border-indigo-500">
+                    <button class="w-full h-11 bg-emerald-600 text-white font-bold rounded-xl text-xs uppercase shadow-lg shadow-emerald-600/20">Sign Up</button>
+                </form>
+            </div>
+        `);
+
+        window.auth = (type) => {
+            if(type==='login') {
+                const email = document.getElementById('li-email').value;
+                const pass = document.getElementById('li-pass').value;
+                db.ajaxRequest(() => {
+                    const users = db.getData('rs_users');
+                    const user = users.find(u => u.email === email && u.password === pass);
+                    if(!user) throw new Error("Credentials Invalid.");
+                    db.setData('rs_session_user', user);
+                }, (res) => { if(res.success) router.navigate('user-home'); else alert(res.error); });
+            } else {
+                const name = document.getElementById('su-name').value;
+                const phone = document.getElementById('su-phone').value;
+                const email = document.getElementById('su-email').value;
+                const pass = document.getElementById('su-pass').value;
+                db.ajaxRequest(() => {
+                    let users = db.getData('rs_users');
+                    if(users.find(u => u.email === email)) throw new Error("User Already Exists.");
+                    const user = {id: Date.now(), name, phone, email, password:pass, address:''};
+                    users.push(user); db.setData('rs_users', users);
+                    db.setData('rs_session_user', user);
+                }, (res) => { if(res.success) router.navigate('user-home'); else alert(res.error); });
+            }
+        };
+
+        // HOME SHOP TEMPLATE (PRODUCT LABEL & IMAGE NODES FULLY CONNECTED)
+        router.register('user-home', () => {
+            const cats = db.getData('rs_categories');
+            const prods = db.getData('rs_products');
+            return `
+                <div class="p-4 flex space-x-4 overflow-x-auto no-scrollbar bg-white border-b border-slate-100">
+                    ${cats.map(c => `
+                        <div onclick="router.navigate('user-products', ${c.id})" class="flex flex-col items-center shrink-0 cursor-pointer">
+                            <div class="w-12 h-12 bg-slate-50 border border-slate-100 rounded-full flex items-center justify-center p-2">
+                                <img src="${c.image}" class="w-full h-full object-contain">
+                            </div>
+                            <span class="text-[10px] font-bold mt-1 text-slate-600">${c.name}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="p-4 grid grid-cols-2 gap-3">
+                    ${prods.map(p => {
+                        const productGallery = p.images && p.images.length > 0 ? p.images : [p.image];
+                        return `
+                        <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden p-3 flex flex-col justify-between shadow-xs relative">
+                            <div class="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start pointer-events-none">
+                                <span class="text-[8px] font-mono font-black bg-indigo-600 text-white px-1.5 py-0.5 rounded shadow-sm">${p.code || 'product code'}</span>
+                                ${p.stock <= 0 ? `
+                                    <span class="text-[7px] font-bold bg-rose-500 text-white px-1 py-0.5 rounded shadow-xs uppercase">Out of stock</span>
+                                ` : `
+                                    <span class="text-[7px] font-bold bg-emerald-500 text-white px-1 py-0.5 rounded shadow-xs uppercase">${p.stock} stock</span>
+                                `}
+                            </div>
+
+                            <img src="${productGallery[0]}" onclick="router.navigate('user-product-detail', ${p.id})" class="h-28 object-contain mx-auto cursor-pointer hover:scale-105 transition duration-200 mt-4">
+                            <h4 class="font-bold text-xs mt-3 text-slate-800 truncate">${p.name}</h4>
+                            <div class="bg-slate-50 p-2 rounded-xl border border-slate-100 my-2">
+                                <p class="text-[10px] text-slate-400 line-clamp-2 leading-tight">${p.short_desc || p.description || 'No description attached.'}</p>
+                            </div>
+                            <div class="flex justify-between items-center mt-1">
+                                <span class="text-xs font-black text-indigo-600 font-mono">৳${p.price.toLocaleString()}</span>
+                                <button onclick="addToCart(${p.id}, 1)" ${p.stock <= 0 ? 'disabled class="h-7 px-3 bg-slate-300 text-slate-500 font-bold text-[10px] rounded-lg cursor-not-allowed"' : 'class="h-7 px-3 bg-indigo-600 text-white font-bold text-[10px] rounded-lg shadow-sm shadow-indigo-600/10 active:scale-95 transition"'}>Add</button>
+                            </div>
+                        </div>
+                    `}).join('')}
+                </div>
+            `;
+        });
+
+        window.addToCart = (id, qty = 1) => {
+            const prods = db.getData('rs_products');
+            const prod = prods.find(p => p.id === id);
+            if(prod && prod.stock <= 0) { alert('Product is out of stock.'); return; }
+
+            let cart = db.getData('rs_cart') || [];
+            let match = cart.find(c => c.id === id);
+            let currentQtyInCart = match ? match.qty : 0;
+
+            if(currentQtyInCart + qty > prod.stock) {
+                alert(`দুঃখিত! এই প্রোডাক্টটি সর্বোচ্চ ${prod.stock} টি স্টকে আছে।`);
+                return;
+            }
+
+            db.ajaxRequest(() => {
+                const displayImg = (prod.images && prod.images.length > 0) ? prod.images[0] : prod.image;
+                if(match) match.qty += qty; else cart.push({id: prod.id, name: prod.name, price: prod.price, image: displayImg, qty: qty});
+                db.setData('rs_cart', cart);
+            }, () => router.updateCartBadge());
+        };
+
+        // CATEGORIES & SEARCH LISTING TEMPLATE (LABELS SYNCED)
+        router.register('user-products', (catId) => {
+            let prods = db.getData('rs_products');
+            if(catId) prods = prods.filter(p => p.cat_id === catId);
+            return `
+                <div class="p-3 bg-white border-b border-slate-100 text-xs font-bold uppercase tracking-wider text-slate-400">Products Engine</div>
+                <div id="products-list-container" class="p-3 space-y-2">
+                    ${prods.map(p => {
+                        const displayImg = (p.images && p.images.length > 0) ? p.images[0] : p.image;
+                        return `
+                        <div onclick="router.navigate('user-product-detail', ${p.id})" class="bg-white p-3 border border-slate-100 rounded-xl flex items-center space-x-3 cursor-pointer shadow-2xs relative">
+                            <div class="absolute top-2 left-2 z-10">
+                                <span class="text-[8px] font-mono font-black bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded border border-indigo-100/60 shadow-2xs">${p.code || 'SKU'}</span>
+                            </div>
+                            <img src="${displayImg}" class="w-16 h-16 object-contain mt-2">
+                            <div class="flex-1 min-w-0">
+                                <h4 class="font-bold text-xs text-slate-800 truncate">${p.name}</h4>
+                                <p class="text-[10px] text-slate-400 truncate mb-1">${p.short_desc || p.description || ''}</p>
+                                <span class="text-xs font-black text-indigo-600 font-mono">৳${p.price.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    `}).join('')}
+                </div>
+            `;
+        });
+
+        // SPECIFICATION DETAIL TEMPLATE (MULTI-IMAGES, LABELS & QUANTITY SELECTOR ADDED)
+        router.register('user-product-detail', (id) => {
+            const prods = db.getData('rs_products');
+            const p = prods.find(pr => pr.id === id);
+            const productGallery = p.images && p.images.length > 0 ? p.images : [p.image];
+
+            // জেনারেট কোয়ান্টিটি অপশন লিস্ট বেসড অন স্টক
+            let qtyOptions = '';
+            for(let i = 1; i <= Math.min(p.stock, 20); i++) {
+                qtyOptions += `<option value="${i}">${i}</option>`;
+            }
+
+            return `
+                <div class="p-6 bg-white border-b border-slate-100 flex flex-col items-center">
+                    <div class="w-full flex justify-center items-center h-44">
+                        <img id="active-gallery-viewframe" src="${productGallery[0]}" class="h-44 object-contain transition-all duration-300">
+                    </div>
+                    
+                    ${productGallery.length > 1 ? `
+                        <div class="flex gap-2 mt-4 overflow-x-auto no-scrollbar py-1 w-full justify-center">
+                            ${productGallery.map(img => `
+                                <img src="${img}" onclick="document.getElementById('active-gallery-viewframe').src = this.src" class="w-10 h-10 p-1 border border-slate-200 rounded-lg object-contain bg-slate-50 cursor-pointer hover:border-indigo-500 transition">
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+
+                <div class="p-5 bg-white">
+                    <h2 class="text-lg font-black text-slate-800">${p.name}</h2>
+                    
+                    <p class="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                        <span class="bg-indigo-50 text-indigo-600 border border-indigo-100 px-2 py-0.5 rounded text-[9px] font-mono font-bold">SKU: ${p.code}</span>
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold ${p.stock > 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}">
+                            ${p.stock > 0 ? `In Stock: ${p.stock} Units` : 'Out of Stock'}
+                        </span>
+                    </p>
+                    
+                    ${p.short_desc ? `
+                        <p class="text-xs text-slate-500 mt-3 italic font-medium bg-slate-50/60 px-3 py-2 rounded-xl border border-slate-100">${p.short_desc}</p>
+                    ` : ''}
+
+                    <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 mt-4 space-y-3">
+                        <div>
+                            <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider block mb-0.5">Overview Overview</span>
+                            <p class="text-xs text-slate-600 leading-relaxed">${p.description || 'No general description log found.'}</p>
+                        </div>
+                        ${p.long_desc ? `
+                            <div class="border-t border-slate-200/60 pt-2.5">
+                                <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider block mb-1">Technical System Specifications</span>
+                                <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line">${p.long_desc}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="flex items-center justify-between mt-5">
+                        <div class="text-xl font-black text-indigo-600 font-mono">৳${p.price.toLocaleString()}</div>
+                        
+                        ${p.stock > 0 ? `
+                        <div class="flex items-center space-x-2">
+                            <span class="text-xs font-bold text-slate-400">Qty:</span>
+                            <select id="detail-qty-select" class="h-9 px-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none text-slate-700">
+                                ${qtyOptions}
+                            </select>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <button onclick="const selectedQty = parseInt(document.getElementById('detail-qty-select')?.value || 1); addToCart(${p.id}, selectedQty); router.navigate('user-cart');" ${p.stock <= 0 ? 'disabled class="w-full h-11 bg-slate-300 text-slate-500 rounded-xl text-xs font-bold uppercase mt-5 cursor-not-allowed"' : 'class="w-full h-11 bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase mt-5 shadow-lg shadow-indigo-600/20 active:scale-95 transition"'}>Buy / Add To Cart</button>
+                </div>
+            `;
+        });
+
+        // BASKET MODULE CART LAYER WITH QUANTITY UPDATE CONTROLS
+        router.register('user-cart', () => {
+            const cart = db.getData('rs_cart') || [];
+            if(cart.length===0) return `<div class="p-12 text-center text-xs text-slate-400"><i class="fa-solid fa-bag-shopping block text-2xl mb-2 text-slate-300"></i>Cart Terminal is Empty</div>`;
+            const total = cart.reduce((acc, i) => acc + (i.price*i.qty), 0);
+            return `
+                <div class="p-3 space-y-2 pb-24">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider px-1">Review Items</h3>
+                    ${cart.map(c => `
+                        <div class="bg-white p-3 border border-slate-100 rounded-xl flex justify-between items-center shadow-2xs">
+                            <div class="flex items-center space-x-3 flex-1 min-w-0">
+                                <img src="${c.image}" class="w-10 h-10 object-contain">
+                                <div class="min-w-0 flex-1">
+                                    <h4 class="text-xs font-bold text-slate-800 truncate">${c.name}</h4>
+                                    <span class="text-xs font-bold text-indigo-600 font-mono block">৳${c.price.toLocaleString()}</span>
+                                    
+                                    <!-- কোয়ান্টিটি প্লাস-মাইনাস লেভেল সিস্টেম -->
+                                    <div class="flex items-center space-x-1 mt-1.5">
+                                        <button onclick="updateCartQty(${c.id}, -1)" class="w-5 h-5 bg-slate-100 rounded flex items-center justify-center text-xs text-slate-600 font-bold active:bg-slate-200">-</button>
+                                        <span class="px-2 text-xs font-mono font-bold text-slate-800 bg-slate-50 rounded border border-slate-100">${c.qty}</span>
+                                        <button onclick="updateCartQty(${c.id}, 1)" class="w-5 h-5 bg-slate-100 rounded flex items-center justify-center text-xs text-slate-600 font-bold active:bg-slate-200">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <button onclick="removeCart(${c.id})" class="text-rose-400 p-2 hover:bg-rose-50 rounded-lg transition shrink-0 ml-2"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="p-4 bg-white border-t border-slate-100 fixed bottom-16 left-0 right-0 max-w-md mx-auto flex items-center justify-between shadow-2xl z-30">
+                    <div>
+                        <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wide">Basket Subtotal</span>
+                        <div class="text-base font-black text-slate-800 font-mono">৳${total.toLocaleString()}</div>
+                    </div>
+                    <button onclick="router.navigate('user-checkout')" class="h-10 px-5 bg-indigo-600 text-white font-bold text-xs uppercase rounded-xl shadow-md shadow-indigo-600/10 active:scale-95 transition">Proceed Checkout</button>
+                </div>
+            `;
+        });
+
+        window.updateCartQty = (id, adjustment) => {
+            const prods = db.getData('rs_products');
+            const prod = prods.find(p => p.id === id);
+            let cart = db.getData('rs_cart') || [];
+            let match = cart.find(c => c.id === id);
+
+            if(match) {
+                let newQty = match.qty + adjustment;
+                if(newQty <= 0) {
+                    removeCart(id);
+                    return;
+                }
+                if(newQty > prod.stock) {
+                    alert(`দুঃখিত! স্টকে সর্বোচ্চ ${prod.stock} টি প্রোডাক্ট উপলব্ধ আছে।`);
+                    return;
+                }
+                db.ajaxRequest(() => {
+                    match.qty = newQty;
+                    db.setData('rs_cart', cart);
+                }, () => router.navigate('user-cart'));
+            }
+        };
+
+        window.removeCart = (id) => {
+            db.ajaxRequest(() => {
+                let cart = db.getData('rs_cart');
+                cart = cart.filter(c => c.id !== id);
+                db.setData('rs_cart', cart);
+            }, () => router.navigate('user-cart'));
+        };
+
+        // SECURE SYSTEM CHECKOUT MODULE
+        router.register('user-checkout', () => {
+            const user = db.getData('rs_session_user');
+            const cart = db.getData('rs_cart') || [];
+            const subtotal = cart.reduce((acc, i) => acc + (i.price*i.qty), 0);
+            const defaultDelivery = 60; 
+            const totalPayable = subtotal + defaultDelivery;
+
+            return `
+                <form onsubmit="event.preventDefault(); placeOrder(${subtotal});" class="p-4 space-y-4">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Secure Checkout</h3>
+                    
+                    <div class="space-y-3">
+                        <input type="text" id="ch-name" value="${user.name || ''}" required class="w-full h-11 px-4 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500" placeholder="Full Name">
+                        <input type="tel" id="ch-phone" value="${user.phone || ''}" required class="w-full h-11 px-4 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500" placeholder="Phone">
+                        <textarea id="ch-address" required class="w-full p-3 h-16 border border-slate-200 rounded-xl text-xs resize-none focus:outline-none focus:border-indigo-500" placeholder="Full Delivery Address">${user.address || ''}</textarea>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Delivery Area</label>
+                        <select id="ch-delivery" onchange="recalculateReceiptTotal(${subtotal})" class="w-full h-11 px-3 border border-slate-200 rounded-xl text-xs bg-white focus:outline-none focus:border-indigo-500 text-slate-700">
+                            <option value="80">Inside Dhaka (৳80)</option>
+                            <option value="120">Outside Dhaka (৳120)</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider">Payment Method</label>
+                        <select id="ch-method" onchange="toggleWalletFields(this.value)" class="w-full h-11 px-3 border border-slate-200 rounded-xl text-xs bg-white focus:outline-none focus:border-indigo-500 text-slate-700">
+                            <option value="COD">Cash On Delivery (COD)</option>
+                            <option value="bKash">bKash Mobile Wallet</option>
+                            <option value="Nagad">Nagad Mobile Wallet</option>
+                        </select>
+                    </div>
+
+                    <div id="wallet-fields" class="hidden space-y-3 bg-slate-50 p-3 rounded-xl border border-dashed border-indigo-200">
+                        <p class="text-[10px] font-bold text-indigo-600 leading-normal"><i class="fa-solid fa-circle-info mr-1"></i> "8801720438220"<>আমাদের মার্চেন্ট নাম্বারে সেন্ডমানি বা পেমেন্ট সম্পন্ন করে নিচের তথ্যগুলো দিন।</p>
+                        <div>
+                            <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">আপনার অ্যাকাউন্ট নাম্বার</label>
+                            <input type="tel" id="ch-wallet-number" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none" placeholder="01XXXXXXXXX">
+                        </div>
+                        <div>
+                            <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">ট্রানজেকশন আইডি (Transaction ID)</label>
+                            <input type="text" id="ch-txnid" class="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none" placeholder="TrxID Example: AX76K9">
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 text-xs font-medium text-slate-500 space-y-2">
+                        <div class="flex justify-between">
+                            <span>Subtotal Amount:</span>
+                            <span class="text-slate-800 font-mono">৳${subtotal.toLocaleString()}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Delivery Logistics Charge:</span>
+                            <span id="invoice-delivery" class="text-slate-800 font-mono">৳60</span>
+                        </div>
+                        <div class="flex justify-between text-sm font-black border-t border-slate-200 pt-2.5 mt-1">
+                            <span class="text-slate-800">Total Net Payable:</span>
+                            <span id="invoice-total" class="text-emerald-600 font-mono text-base">৳${totalPayable.toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full h-11 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-emerald-600/20 active:scale-95 transition">Confirm Secure Order</button>
+                </form>
+            `;
+        });
+
+        window.recalculateReceiptTotal = (subtotal) => {
+            const deliveryCharge = parseFloat(document.getElementById('ch-delivery').value) || 0;
+            const finalAmount = subtotal + deliveryCharge;
+            document.getElementById('invoice-delivery').innerText = '৳' + deliveryCharge;
+            document.getElementById('invoice-total').innerText = '৳' + finalAmount.toLocaleString();
+        };
+
+        window.toggleWalletFields = (val) => {
+            const box = document.getElementById('wallet-fields');
+            const num = document.getElementById('ch-wallet-number');
+            const txn = document.getElementById('ch-txnid');
+            if(val==='bKash' || val==='Nagad') {
+                box.classList.remove('hidden'); num.required = true; txn.required = true;
+            } else {
+                box.classList.add('hidden'); num.required = false; txn.required = false;
+                num.value = ""; txn.value = "";
+            }
+        };
+
+        window.placeOrder = (subtotal) => {
+            db.ajaxRequest(() => {
+                const user = db.getData('rs_session_user');
+                const cart = db.getData('rs_cart');
+                const deliveryCharge = parseFloat(document.getElementById('ch-delivery').value) || 0;
+                const finalAmount = subtotal + deliveryCharge;
+                let orders = db.getData('rs_orders');
+                let products = db.getData('rs_products');
+
+                // স্টক হ্রাসকরণ এবং সিঙ্ক্রোনাইজেশন লজিক
+                cart.forEach(cartItem => {
+                    let coreProduct = products.find(p => p.id === cartItem.id);
+                    if(coreProduct) {
+                        coreProduct.stock = Math.max(0, coreProduct.stock - cartItem.qty);
+                    }
+                });
+                db.setData('rs_products', products);
+                
+                const newOrder = {
+                    id: 1000 + orders.length,
+                    user_id: user.id,
+                    user_name: document.getElementById('ch-name').value,
+                    phone: document.getElementById('ch-phone').value,
+                    address: document.getElementById('ch-address').value,
+                    delivery_charge: deliveryCharge, 
+                    payment_method: document.getElementById('ch-method').value,
+                    wallet_number: document.getElementById('ch-wallet-number')?.value || 'N/A',
+                    txnid: document.getElementById('ch-txnid')?.value || 'N/A',
+                    amount: finalAmount, 
+                    items: cart,
+                    status: 'Placed',
+                    date: new Date().toLocaleDateString()
+                };
+                
+                orders.unshift(newOrder); 
+                db.setData('rs_orders', orders);
+                db.setData('rs_cart', []);
+            }, () => router.navigate('user-orders'));
+        };
+
+        // PIPELINE PROGRESS TRACKER
+        router.register('user-orders', () => {
+            const user = db.getData('rs_session_user');
+            const orders = db.getData('rs_orders').filter(o => o.user_id === user.id) || [];
+            if(orders.length===0) return `<div class="p-12 text-center text-xs text-slate-400"><i class="fa-solid fa-clock-rotate-left block text-2xl mb-2 text-slate-300"></i>No Operational Orders Placed Yet.</div>`;
+            return `
+                <div class="p-3 space-y-3">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider px-1">Pipeline Tracking Status</h3>
+                    ${orders.map(o => {
+                        let step = o.status === 'Placed' ? 1 : (o.status === 'Dispatched' ? 2 : 3);
+                        return `
+                            <div class="bg-white p-4 border border-slate-100 rounded-2xl space-y-3.5 shadow-2xs">
+                                <div class="flex justify-between items-center text-xs font-bold border-b border-slate-50 pb-2">
+                                    <span class="text-slate-700 font-mono">ID: #${o.id}</span>
+                                    <span class="px-2 py-0.5 bg-indigo-50 border border-indigo-100 rounded text-indigo-600 text-[10px]">${o.status}</span>
+                                </div>
+                                <div class="text-xs space-y-1">
+                                    <div class="text-slate-400 text-[10px]">Net Invoice Escrow:</div>
+                                    <div class="text-emerald-600 font-black text-base font-mono">৳${o.amount.toLocaleString()}</div>
+                                    <div class="text-[10px] text-slate-400 pt-1 font-medium">Method: <span class="text-slate-700 font-bold">${o.payment_method}</span> (Logistics: ৳${o.delivery_charge || 0})</div>
+                                </div>
+                                
+                                <div class="relative flex items-center justify-between pt-2 px-2">
+                                    <div class="absolute left-0 right-0 top-5 h-0.5 bg-slate-100 -z-10 mx-6"></div>
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] ${step>=1?'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30':'bg-slate-100 text-slate-400'}"><i class="fa-solid fa-receipt"></i></div>
+                                        <span class="text-[9px] font-bold mt-1.5 text-slate-600">Placed</span>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] ${step>=2?'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30':'bg-slate-100 text-slate-400'}"><i class="fa-solid fa-truck"></i></div>
+                                        <span class="text-[9px] font-bold mt-1.5 text-slate-600">Dispatched</span>
+                                    </div>
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] ${step>=3?'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30':'bg-slate-100 text-slate-400'}"><i class="fa-solid fa-box"></i></div>
+                                        <span class="text-[9px] font-bold mt-1.5 text-slate-600">Delivered</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        });
+
+        // HELPLINE & LIVE SUPPORT THREAD MODULE (CONNECTED TO ADMIN REPLIES)
+        router.register('user-helpline', () => {
+            const user = db.getData('rs_session_user');
+            const tickets = db.getData('rs_tickets').filter(t => t.user_id === user.id) || [];
+            
+            return `
+                <div class="p-4 space-y-4">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-wider px-1">Helpline Hub</h3>
+                    
+                    <div class="bg-white p-4 border border-slate-100 rounded-2xl shadow-2xs space-y-3">
+                        <span class="text-[10px] font-bold text-indigo-500 uppercase tracking-wider block">Direct Communication</span>
+                        <p class="text-xs text-slate-500 leading-normal">আমাদের সাথে সরাসরি যোগাযোগ করতে নিচের যেকোনো একটি মাধ্যমে ক্লিক করুন।</p>
+                        
+                        <div class="grid grid-cols-2 gap-2 pt-1">
+                            <a href="tel:+8801720438220" class="h-10 bg-indigo-50 border border-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center space-x-2 text-xs font-bold active:scale-95 transition">
+                                <i class="fa-solid fa-phone-volume"></i>
+                                <span>Call Support</span>
+                            </a>
+                            <a href="https://wa.me/8801625933423" target="_blank" class="h-10 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center space-x-2 text-xs font-bold active:scale-95 transition">
+                                <i class="fa-brands fa-whatsapp text-sm"></i>
+                                <span>WhatsApp</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-4 border border-slate-100 rounded-2xl shadow-2xs space-y-3">
+                        <span class="text-[10px] font-bold text-rose-500 uppercase tracking-wider block">Submit a Complaint / Query</span>
+                        <form onsubmit="event.preventDefault(); submitSupportTicket();" class="space-y-3">
+                            <div>
+                                <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Topic</label>
+                                <select id="tk-subject" class="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs bg-white text-slate-700 focus:outline-none focus:border-indigo-500">
+                                    <option value="Delivery Delay">Delivery Issue</option>
+                                    <option value="Payment Issue">Payment Problem</option>
+                                    <option value="Product Defect">Product Fault</option>
+                                    <option value="Others">General Query</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[9px] font-black text-slate-500 uppercase mb-1">Write Details</label>
+                                <textarea id="tk-message" required class="w-full p-3 h-24 border border-slate-200 rounded-xl text-xs resize-none focus:outline-none focus:border-indigo-500 text-slate-700" placeholder="আপনার সমস্যা বা অভিযোগটি এখানে লিখুন..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl uppercase shadow-md shadow-indigo-600/10 active:scale-95 transition">Submit Ticket</button>
+                        </form>
+                    </div>
+
+                    <div class="space-y-3">
+                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider px-1 block">Your Support Tickets (${tickets.length})</span>
+                        ${tickets.length === 0 ? `
+                            <div class="p-6 text-center text-xs text-slate-400 bg-white border border-slate-100 rounded-2xl shadow-2xs">No support history available.</div>
+                        ` : tickets.map(t => {
+                            const adminReplies = t.replies || [];
+                            return `
+                            <div class="bg-white p-4 border border-slate-100 rounded-2xl shadow-2xs space-y-3">
+                                <div class="flex justify-between items-center text-[10px] font-bold border-b border-slate-100 pb-1.5">
+                                    <span class="text-indigo-600 font-mono">[${t.subject}]</span>
+                                    <span class="text-slate-400 font-mono">${t.date}</span>
+                                </div>
+                                <p class="text-xs text-slate-600 leading-normal bg-slate-50 p-2.5 rounded-xl border border-slate-100">${t.message}</p>
+                                
+                                ${adminReplies.length > 0 ? `
+                                    <div class="space-y-2 pt-1">
+                                        <span class="text-[9px] font-black text-emerald-600 uppercase tracking-wider block"><i class="fa-solid fa-headset mr-1"></i> Root Operator Replies:</span>
+                                        <div class="space-y-1.5 max-h-40 overflow-y-auto no-scrollbar bg-slate-50/80 p-2 rounded-xl border border-slate-100">
+                                            ${adminReplies.map(r => `
+                                                <div class="bg-white p-2 rounded-lg border border-slate-200/60 shadow-3xs">
+                                                    <div class="flex justify-between items-center text-[8px] font-mono text-indigo-500 font-bold mb-0.5">
+                                                        <span>System Admin</span>
+                                                        <span class="text-slate-400">${r.date || ''}</span>
+                                                    </div>
+                                                    <p class="text-xs text-slate-700 leading-normal font-medium">${r.msg || r.message}</p>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : `
+                                    <div class="text-[10px] font-bold text-amber-500 flex items-center space-x-1 pt-1">
+                                        <i class="fa-solid fa-circle-dot text-[8px] animate-pulse"></i>
+                                        <span>Status: Pending Review</span>
+                                    </div>
+                                `}
+                            </div>
+                        `}).join('')}
+                    </div>
+                </div>
+            `;
+        });
+
+        window.submitSupportTicket = () => {
+            db.ajaxRequest(() => {
+                const user = db.getData('rs_session_user');
+                let tickets = db.getData('rs_tickets') || [];
+                const now = new Date();
+                const timestamp = now.toLocaleDateString();
+                
+                const newTicket = {
+                    id: Date.now(),
+                    user_id: user.id,
+                    subject: document.getElementById('tk-subject').value,
+                    message: document.getElementById('tk-message').value,
+                    replies: [], 
+                    date: timestamp
+                };
+
+                tickets.unshift(newTicket);
+                db.setData('rs_tickets', tickets);
+            }, () => {
+                alert('আপনার টিকিটটি সফলভাবে সাবমিট হয়েছে।');
+                router.navigate('user-helpline');
+            });
+        };
+
+        // CLIENT TERMINAL ACCOUNT PROFILE VIEW (UPLOAD FEATURE REMOVED/NOT IMPLEMENTED)
+        router.register('user-profile', () => {
+            const user = db.getData('rs_session_user');
+            return `
+                <div class="p-4 space-y-4">
+                    <div class="bg-white border border-slate-100 p-4 rounded-2xl flex items-center space-x-3 shadow-2xs">
+                        <div class="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 font-bold"><i class="fa-solid fa-user"></i></div>
+                        <div><h3 class="font-bold text-sm text-slate-800">${user.name || 'Guest'}</h3><p class="text-xs text-slate-400">${user.email || ''}</p></div>
+                    </div>
+                    
+                    <div onclick="router.navigate('user-helpline')" class="bg-gradient-to-r from-indigo-500 to-indigo-600 p-3.5 rounded-2xl flex justify-between items-center text-white cursor-pointer shadow-md shadow-indigo-600/10 active:scale-98 transition">
+                        <div class="flex items-center space-x-3">
+                            <i class="fa-solid fa-headset text-lg"></i>
+                            <div>
+                                <h4 class="text-xs font-bold">Helpline & Support Center</h4>
+                                <p class="text-[10px] text-indigo-100">যেকোনো সমস্যায় এখানে অভিযোগ করুন</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-indigo-200"></i>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); updateProfile();" class="bg-white border border-slate-100 p-4 rounded-2xl space-y-3 shadow-2xs">
+                        <input type="text" id="pr-name" value="${user.name || ''}" class="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500" placeholder="Name">
+                        <input type="tel" id="pr-phone" value="${user.phone || ''}" class="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500" placeholder="Phone">
+                        <input type="text" id="pr-addr" value="${user.address || ''}" class="w-full h-10 px-3 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-indigo-500" placeholder="Address">
+                        <button class="w-full h-10 bg-indigo-600 text-white font-bold text-xs rounded-xl uppercase shadow-md shadow-indigo-600/10">Save Changes</button>
+                    </form>
+                    <button onclick="db.logoutUser();" class="w-full h-11 bg-rose-50 text-rose-600 font-bold text-xs border border-rose-100 rounded-xl uppercase active:scale-98 transition">Logout Account Node</button>
+                </div>
+            `;
+        });
+
+        window.updateProfile = () => {
+            db.ajaxRequest(() => {
+                let user = db.getData('rs_session_user');
+                let users = db.getData('rs_users');
+                let match = users.find(u => u.id === user.id);
+                if(match) {
+                    match.name = document.getElementById('pr-name').value;
+                    match.phone = document.getElementById('pr-phone').value;
+                    match.address = document.getElementById('pr-addr').value;
+                    db.setData('rs_users', users); db.setData('rs_session_user', match);
+                }
+            }, () => alert('Profile Updated Successfully.'));
+        };
+
+        // Bootstrapping Engine Routing
+        router.navigate('user-home');
+    </script>
+</body>
+</html>
